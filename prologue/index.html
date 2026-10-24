@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <meta name="theme-color" content="#08080d">
 <title>Prologue | Midnight Hour</title>
 <link rel="icon" type="image/x-icon" href="../favicon.ico?v=7">
@@ -563,6 +563,19 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--purple-light);outli
 .writing{width:min(680px,100%);margin:0 auto;color:rgba(245,244,249,.82);font-size:17px;line-height:2.15;word-break:keep-all;overflow-wrap:break-word}
 .writing p{margin:0 0 1.65em}.writing p:last-child{margin-bottom:0}
 @media(max-width:720px){.writing{font-size:15px;line-height:2}}
+
+/* 화면 아래에 일정한 간격을 두고 고정 */
+:root{--player-bottom-inset:0px}
+#music-player{
+ position:fixed!important;
+ inset:auto auto calc(var(--player-bottom-inset) + max(16px,env(safe-area-inset-bottom,0px))) 50%!important;
+ transform:translateX(-50%)!important;
+ width:min(660px,calc(100% - 36px))!important;
+ margin:0!important;
+ animation:none!important;
+ z-index:100;
+}
+.fragments-wrap{padding-bottom:145px}
 </style>
 </head>
 <body>
@@ -653,5 +666,24 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--purple-light);outli
 
 </div>
 <script src="../common.js?v=7"></script>
+
+<script>
+(()=>{
+ const player=document.getElementById('music-player');
+ // 부모 요소의 transform에 영향받지 않도록 body에 둡니다.
+ document.body.appendChild(player);
+ function placePlayer(){
+  const viewport=window.visualViewport;
+  const inset=viewport&&Math.abs(viewport.scale-1)<.01
+   ?Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop):0;
+  document.documentElement.style.setProperty('--player-bottom-inset',inset+'px');
+ }
+ window.addEventListener('resize',placePlayer);
+ window.addEventListener('orientationchange',placePlayer);
+ window.visualViewport?.addEventListener('resize',placePlayer);
+ window.visualViewport?.addEventListener('scroll',placePlayer);
+ placePlayer();
+})();
+</script>
 </body>
 </html>
