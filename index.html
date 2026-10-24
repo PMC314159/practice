@@ -62,6 +62,7 @@
 .selection-status{margin:0;font-size:11px;color:var(--muted);line-height:1.7}.selection-status:not(:empty){margin-top:10px}
 @media(max-width:700px){.home-screen{width:calc(100% - 32px);padding:35px 0}.home-header{margin-bottom:15px}.home-heading{margin:0;padding:0;min-height:0}.category-menu{width:min(265px,calc(100vw - 32px))}.category-toggle{width:38px;height:38px}.hero-overlay{inset:5px;border-radius:16px;gap:8px;padding:17px}.hero-play{padding:9px 18px;font-size:12px}.hero-play svg{width:16px;height:16px}}
 
+.home-title-button{display:block;padding:0;border:0;background:transparent;color:inherit;font:inherit;letter-spacing:inherit;text-align:left;transition:opacity .2s}.home-title-button:hover{opacity:.75}
 </style>
 </head>
 <body>
@@ -71,10 +72,10 @@
   </div>
 </section>
 <main class="home-screen" id="homeScreen" hidden>
-  <header class="home-header"><h1 class="home-heading" id="siteTitle">Midnight Hour</h1>
+  <header class="home-header"><h1 class="home-heading"><button type="button" class="home-title-button" id="siteTitle" aria-label="Midnight Hour 홈 그림으로 돌아가기">Midnight Hour</button></h1>
 <div class="category-dock" id="categoryDock"><button class="category-toggle" id="categoryButton" type="button" aria-label="카테고리 열기" aria-expanded="false" aria-controls="categoryMenu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
 <nav class="category-menu" id="categoryMenu" aria-label="카테고리" hidden><ul><li><button type="button" class="category-option" data-category="personnel" aria-pressed="false"><span>Personnel</span><span aria-hidden="true">↗</span></button></li><li><button type="button" class="category-option" data-category="timeline" aria-pressed="false"><span>Timeline</span><span aria-hidden="true">↗</span></button></li><li><button type="button" class="category-option" data-category="fragments" aria-pressed="false"><span>Fragments</span><span aria-hidden="true">↗</span></button></li><li><button type="button" class="category-option" data-category="stills" aria-pressed="false"><span>Stills</span><span aria-hidden="true">↗</span></button></li></ul></nav></div></header>
-  <div class="illustration-area"><figure class="tablet"><img id="heroImage" src="./main.jpg" alt="푸른 배경에서 함께 있는 이자헌과 정희솔의 일러스트" width="1306" height="747"><figcaption class="hero-overlay"><span class="selection-name" id="selectionName">Midnight Hour</span><a class="hero-play" id="heroPlay" href="./personnel/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg><span>Play</span></a></figcaption></figure></div><p class="selection-status" id="selectionStatus" role="status"></p>
+  <div class="illustration-area"><figure class="tablet"><img id="heroImage" src="./main.jpg" alt="푸른 배경에서 함께 있는 이자헌과 정희솔의 일러스트" width="1306" height="747"><figcaption class="hero-overlay"><span class="selection-name" id="selectionName">Midnight Hour</span><a class="hero-play" id="heroPlay" href="./prologue/" aria-label="자정의 시간 글 읽기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg><span>Play</span></a></figcaption></figure></div><p class="selection-status" id="selectionStatus" role="status"></p>
   <section class="music-player" id="music-player" aria-label="음악 플레이어"><div class="music-left"><span class="music-icon" aria-hidden="true">♫</span><span class="music-title" id="music-title">긴 밤(feat. 기리보이) - Seori</span></div><div class="music-controls"><button type="button" class="music-btn small" id="previousTrack" aria-label="이전 곡">‹</button><button type="button" class="music-btn" id="music-btn" aria-label="음악 재생">▶</button><button type="button" class="music-btn small" id="followingTrack" aria-label="다음 곡">›</button></div><audio id="bgm" preload="metadata" playsinline></audio></section>
   <p class="music-status" id="musicStatus" role="status"></p>
 </main>
@@ -89,6 +90,7 @@ const HOME={
  title:'Midnight Hour',
  searchText:'자정의 시간',
  hero:'./main.jpg', // 홈 화면 전용 일러스트
+ homePage:'./prologue/', // 홈 그림의 Play 버튼으로 들어가는 글 페이지
  categories:{personnel:'./personnel/',timeline:'./timeline/',fragments:'./fragments/',stills:'./stills/'},
  // 카테고리별 메인 일러스트 경로입니다. 기존 홈페이지의 파일명을 사용합니다.
  categoryImages:{personnel:'./main-personnel.png',timeline:'./main-timeline.jpg',fragments:'./main-fragments.jpg',stills:'./main-stills.png'},
@@ -102,6 +104,7 @@ let entered=false,typingTimer=null,commonReady=false,fallback=false;
 $('siteTitle').textContent=HOME.title;document.title=HOME.title;$('music-title').textContent=HOME.musicTitle;
 const hero=$('heroImage'),defaultHero=HOME.hero||hero.src;
 hero.src=defaultHero;
+$('heroPlay').href=HOME.homePage;
 function finishTyping(){clearTimeout(typingTimer);$('searchText').textContent=HOME.searchText;$('searchBox').classList.add('typed')}
 function type(){if(reduced){finishTyping();return}const letters=Array.from(HOME.searchText);let n=0;function tick(){if(entered)return;$('searchText').textContent=letters.slice(0,++n).join('');if(n<letters.length)typingTimer=setTimeout(tick,150);else finishTyping()}typingTimer=setTimeout(tick,600)}
 function enter(){if(entered)return;entered=true;finishTyping();$('homeScreen').hidden=false;document.body.classList.add('entered');$('entryScreen').classList.add('leaving');$('entryScreen').setAttribute('aria-hidden','true');setTimeout(()=>{$('entryScreen').hidden=true;$('categoryButton').focus({preventScroll:true})},reduced?0:650)}
@@ -112,6 +115,12 @@ categoryButton.addEventListener('click',()=>setMenu(menu.hidden));
 categoryButton.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){e.preventDefault();setMenu(true,true)}});
 menu.addEventListener('keydown',e=>{let n=options.indexOf(document.activeElement);if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();options[(n+(e.key==='ArrowDown'?1:-1)+options.length)%options.length].focus()}else if(e.key==='Home'){e.preventDefault();options[0].focus()}else if(e.key==='End'){e.preventDefault();options.at(-1).focus()}});
 let selectionToken=0;
+function resetHome(){
+ ++selectionToken;hero.src=defaultHero;hero.alt='페어 홈 일러스트';hero.closest('.tablet').classList.remove('loading');
+ $('selectionName').textContent=HOME.title;$('heroPlay').href=HOME.homePage;$('heroPlay').setAttribute('aria-label','자정의 시간 글 읽기');$('selectionStatus').textContent='';
+ options.forEach(item=>item.setAttribute('aria-pressed','false'));setMenu(false);
+}
+$('siteTitle').addEventListener('click',resetHome);
 function selectCategory(option){
  const key=option.dataset.category,label=option.firstElementChild.textContent,token=++selectionToken;
  options.forEach(item=>item.setAttribute('aria-pressed',String(item===option)));
